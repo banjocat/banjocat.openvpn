@@ -1,2 +1,65 @@
 ---
-# tasks file for banjocat.openvpn
+# based on https://linuxconfig.org/openvpn-setup-on-ubuntu-18-04-bionic-beaver-linux
+- name: install packages for ubuntu
+  apt:
+    pkg:
+      - openvpn
+      - easy-rsa
+
+- name: create easy_rsa dir
+  file:
+    dest: "{{ easy_rsa_lib }}"
+    state: directory
+
+- name: create ca
+  shell: make-cadir certificates
+  args:
+    chdir: "{{ easy_rsa_lib }}"
+    creates: "{{ easy_rsa_lib }}/certificates"
+
+- name: create env file
+  template:
+    dest: "{{ easy_rsa_lib }}/certificates/vars"
+    src: easy_rsa_vars
+
+- name: Clean and build-ca
+  shell: . vars && ./clean-all && ./build-ca --batch
+  args:
+    chdir: "{{ easy_rsa_lib }}/certificates"
+    creates: "{{ easy_rsa_lib }}/certificates/keys/ca.key"
+    executable: /bin/bash
+
+- name: generate server keys
+  shell: . vars && ./build-key-server server
+  args:
+    chdir: "{{ easy_rsa_lib }}/certificates"
+    creates: "{{ easy_rsa_lib }}/certificates/keys/server.key"
+    executable: /bin/bash
+
+- name: build-dh
+  shell: . vars && ./build-dh
+  args:
+    chdir: "{{ easy_rsa_lib }}/certificates"
+    creates: "{{ easy_rsa_lib }}/certificates/keys/dh2048.pem"
+    executable: /bin/bash
+
+- name: build ta.key
+  shell: . vars && openvpn --genkey --secret keys/ta.key
+  args:
+    chdir: "{{ easy_rsa_lib }}/certificates"
+    creates: "{{ easy_rsa_lib }}/certificates/keys/ta.key"
+    executable: /bin/bash
+
+- name: link all the keys
+  file:
+    src: "{{ easy_rsa_lib }}/certificates/keys/{{ item }}"
+    dest: "/etc/openvpn/{{ item }}"
+    state: link
+  with_items:
+    - server.key
+    - ca.crt
+    - dh2048.pem
+    - ta.key
+
+
+

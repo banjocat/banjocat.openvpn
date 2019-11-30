@@ -1,2 +1,2 @@
 ---
-# defaults file for banjocat.openvpn
+easy_rsa_lib: /var/lib/easy_rsa
