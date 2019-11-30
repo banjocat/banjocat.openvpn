@@ -1,7 +1,8 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+WIP openvpn ansible role
+
 
 Requirements
 ------------
