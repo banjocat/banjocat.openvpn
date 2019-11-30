@@ -1,10 +1,15 @@
 ---
 # based on https://linuxconfig.org/openvpn-setup-on-ubuntu-18-04-bionic-beaver-linux
+- name: update apt
+  apt:
+    update_cache: true
+
 - name: install packages for ubuntu
   apt:
     pkg:
       - openvpn
       - easy-rsa
+      - iptables
 
 - name: create easy_rsa dir
   file:
@@ -30,7 +35,7 @@
     executable: /bin/bash
 
 - name: generate server keys
-  shell: . vars && ./build-key-server server
+  shell: . vars && ./build-key-server server --batch
   args:
     chdir: "{{ easy_rsa_lib }}/certificates"
     creates: "{{ easy_rsa_lib }}/certificates/keys/server.key"
@@ -60,6 +65,22 @@
     - ca.crt
     - dh2048.pem
     - ta.key
+
+- name: setup iptables forwarding
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: "{{ openvpn_out_interface }}"
+    source: "{{ openvpn_private_cidr }}"
+    jump: MASQUERADE
+
+
+# TODO: determine if this can be just reload
+- name: setup openvpn server.confg
+  template:
+    src: server.conf
+    dest: /etc/openvpn/server.conf
+  notify: restart openvpn
 
 
 

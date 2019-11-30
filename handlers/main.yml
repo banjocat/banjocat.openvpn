@@ -1,2 +1,10 @@
 ---
-# handlers file for banjocat.openvpn
+- name: restart openvpn
+  service:
+    name: openvpn
+    state: restarted
+
+- name: reload openvpn
+  service:
+    name: openvpn
+    state: reloaded

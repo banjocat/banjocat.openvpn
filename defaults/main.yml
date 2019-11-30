@@ -1,2 +1,37 @@
 ---
 easy_rsa_lib: /var/lib/easy_rsa
+
+
+# required openvpn vars
+# openvpn_out_interface: eth0
+
+# openvpn vars with defaults
+openvpn_proto: udp
+openvpn_dev: tun
+openvpn_topology: net30
+openvpn_private_network: 10.8.0.0
+openvpn_private_cidr: "{{ openvpn_private_network }}/24"
+openvpn_server: "{{ openvpn_private_network }} 255.255.255.0"
+openvpn_ifconfig_pool_persist: ipp.txt
+openvpn_redirect_gateway: false
+openvpn_client_to_client: false
+openvpn_duplicate_cn: false
+openvpn_keepalive: 10 120
+openvpn_cipher: AES-256-CBC
+openvpn_compress: false
+openvpn_compress_lzo: false
+openvpn_max_clients: 100
+openvpn_user: nobody
+openvpn_group: nobody
+openvpn_log_level: 3
+openvpn_log_mute: 20
+
+# openvpn routes to push to client
+openvpn_push_routes:
+  - addr: 192.168.10.0
+    mask: 255.255.255.0
+
+
+# optional
+
+# server-bridge: 10.8.0.4 255.255.255.0 10.8.0.50 10.8.0.100
